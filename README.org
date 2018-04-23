@@ -16,15 +16,15 @@
   Navigate to somewhere you wanna create a new project in and enter:
   
   #+BEGIN_EXAMPLE
-  create_project.py -n *your_project_name*
+  create_project.py -n *your_project_name* -d *your_project_dir_name*
   #+END_EXAMPLE
   
-  For simplicity, assume your project name is /project/. Note that, by convention, the project name should be in lower case with no punctuation.
+  For simplicity, assume your project name is /project/ and your project dir name is /project_dir/. Note that, by convention, the project name should be in lower case with no punctuation.
   
-  This will create a folder /project/ in the directory where you issue the command above. The content of the directory is like:
+  This will create a folder /project_dir/ in the directory where you issue the command above. The content of the directory is like:
   
   #+BEGIN_EXAMPLE
-  project
+  project_dir
   |__ models
   |   |__ __init__.py
   |
