@@ -146,7 +146,7 @@ class Trainer:
             dataset,
             batch_size=self.config.BATCH_SIZE[mode],
             sampler=sampler.RandomSampler(dataset),
-            num_workers=10,
+            num_workers=self.config.NUM_WORKERS,
             collate_fn=dataset.collate_fn)
         return data_loader
 

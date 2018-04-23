@@ -15,6 +15,7 @@ BATCH_SIZE = {'train': None, 'test': None}
 MAX_EPOCHS = None
 GPUS = []
 DEFAULT_GPU = 0
+NUM_WORKERS = 8
 PARAM_GROUPS = [{'params': ['default'], 'lr': 1e-4, 'weight_decay': 5e-4}]
 
 # uncomment these lines to send logs to your email

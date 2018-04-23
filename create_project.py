@@ -7,11 +7,13 @@ import shutil
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', type=str)
+    parser.add_argument('-d', type=str)
     args = parser.parse_args()
     project_name = args.n
+    project_dir_name = args.d
 
     cur_dir = os.getcwd()
-    dst_dir = os.path.join(cur_dir, project_name)
+    dst_dir = os.path.join(cur_dir, project_dir_name)
     template_dir = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'templates')
 

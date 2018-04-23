@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import importlib
 
 import project_name_dataset
@@ -13,6 +14,8 @@ def load_model(config):
 
 
 def main():
+    print(datetime.datetime.now())
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-m', type=str, choices=['all', 'train', 'test'], default='all')
