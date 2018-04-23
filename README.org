@@ -1,0 +1,328 @@
+#+TITLE:      Documentation
+#+SETUPFILE:  theme-readtheorg.setup
+#+OPTIONS:    toc:2
+
+
+* Install
+  Clone the repository to somewhere, navigate into ~my_modules~ and enter:
+  
+  #+BEGIN_EXAMPLE
+  pip install -e .
+  #+END_EXAMPLE
+  
+  This will install the modules into your python environment.
+  
+* Create a New Project
+  Navigate to somewhere you wanna create a new project in and enter:
+  
+  #+BEGIN_EXAMPLE
+  create_project.py -n *your_project_name*
+  #+END_EXAMPLE
+  
+  For simplicity, assume your project name is /project/. Note that, by convention, the project name should be in lower case with no punctuation.
+  
+  This will create a folder /project/ in the directory where you issue the command above. The content of the directory is like:
+  
+  #+BEGIN_EXAMPLE
+  project
+  |__ models
+  |   |__ __init__.py
+  |
+  |__ myconfs
+  |   |__ config_1.py
+  |   |__ __init__.py
+  |
+  |__ scripts
+  |   |__ clean.py
+  |   |__ cont.py
+  |
+  |__ data
+  |
+  |__ main.py
+  |__ project_dataset.py
+  |__ project_trainer.py
+  #+END_EXAMPLE
+  
+  We'll dive into it in the following sections.
+  
+* Write Your Model
+  You can implement several models and place them in the ~models~ directory. A model is simply a python class subclassing the ~PyTorch Module~. This class only dues with receiving the input Variable and outputting the result Variable. One ~.py~ file contains one model class, and the name of the file should be identical to the name of the class. For example, you should implement a ~VGG~ class in ~VGG.py~
+  
+** methods
+   *\under{}\under{}init\under{}\under{}(self, config)*
+   #+BEGIN_EXAMPLE
+   This method receives only one parameter, *config*, which will be discussed later.
+   While you have multiple models in your *models* directory, you use the *config*
+   to decide which one to use.
+   #+END_EXAMPLE
+   
+   *initialize(self)*
+   #+BEGIN_EXAMPLE
+   Perform necessary initialization. For example, initialize the last FC layer
+   with xavier_normal.
+   #+END_EXAMPLE
+   
+   *forward(self, x)*
+   #+BEGIN_EXAMPLE
+   Override the forward method in torch.nn.Module. x can also be a list of
+   torch.autograd.Variable.
+   #+END_EXAMPLE
+   
+* Write Your Dataset
+  The dataset subclasses the ~PyTorch dataset~, so you need to override ~__len__~ and ~__getitem~. Apart from that, you also need to implement a static method, ~collate_fn~.
+** methods
+   *\under{}\under{}init\under{}\under{}(self, config, mode)*
+   #+BEGIN_EXAMPLE
+   Receives the config object and the mode of the data, e.g., 'train' and 'test'.
+   The mode decides whether to load the train data or the test data.
+   #+END_EXAMPLE
+   
+   *\under{}\under{}len\under{}\under{}(self)*
+   #+BEGIN_EXAMPLE
+   Override this method according to PyTorch documentation.
+   #+END_EXAMPLE
+   
+   *\under{}\under{}getitem\under{}\under{}(self, index)*
+   #+BEGIN_EXAMPLE
+   Override this method according to PyTorch documentation.
+   #+END_EXAMPLE
+   
+** static methods
+   *collate\under{}fn(batch)*
+   #+BEGIN_EXAMPLE
+   This is needed by the PyTorch dataloader. If you don't need special collation,
+   just leverage the default_collate defined in torch.utils.data.dataloader.
+   
+   The collation function should return only two elements, the data and the labels,
+   both the instances of torch.Tensor. If the data contains multiple elements,
+   put them into a list.
+   #+END_EXAMPLE
+   
+* Write Your Trainer
+  The trainer is responsible for model initialization, checkpoint loading, input data parsing, loss computation, logging, checkpoint saving and so on. Most of the core parts are implemented within ~my_modules.modules.trainer~. Your trainer should subclass this core trainer and override its interfaces.
+  
+** interfaces
+   *compute\under{}loss(self, outputs, labels)*
+   #+BEGIN_EXAMPLE
+   Args:
+   outputs(torch.autograd.Variable): The output of the model.
+   labels(torch.autograd.Variable):  The labels.
+   
+   Returns:
+   A torch.autograd.Variable object representing the loss.
+   #+END_EXAMPLE
+   
+   *setup\under{}logger(self, epoch, mode, num\under{}batch, ds\under{}size)*
+   #+BEGIN_EXAMPLE
+   Set up a logger. The logger takes these parameters as its initial information,
+   and is responsible for computing, printing and saving information such as accuracy.
+   This procedure happens after every batch and every epoch, and so you should
+   implement methods for these two phases, which are in turn used by the trainer's
+   cleanup_batch and cleanup_epoch (see below).
+   
+   Args:
+   epoch(int):     The current epoch index.
+   mode(str):      The current mode, e.g., 'train' or 'test'.
+   num_batch(int): Number of batches in an epoch.
+   ds_size(int):   Number of samples in the dataset.
+   
+   Returns:
+   A logger of your implementation.
+   #+END_EXAMPLE
+   
+** methods
+   *setup\under{}optimizer(self)*
+   #+BEGIN_EXAMPLE
+   Initialize the optimizer to be used by the trainer. You can use the
+   get_param_groups function defined in my_modules.modules.utils to quickly
+   apply different learning rates to different variables. See the config section for
+   more details.
+   
+   Returns:
+   The optimizer object.
+   
+   Default:
+   Use the Adam optimizer.
+   #+END_EXAMPLE
+   
+   *setup\under{}lr\under{}scheduler(self)*
+   #+BEGIN_EXAMPLE
+   Initialize a learning rate scheduler.
+   
+   Returns:
+   The lr scheduler object.
+   
+   Default:
+   Use no schedulers.
+   #+END_EXAMPLE
+   
+   *setup\under{}dataloader(self, mode)*
+   #+BEGIN_EXAMPLE
+   Initialize a dataloader during each epoch with the given mode.
+   
+   Args:
+   mode(str): e.g., 'train' or 'test'.
+   
+   Returns:
+   A dataloader object.
+   
+   Default:
+   The default pytorch dataloader.
+   #+END_EXAMPLE
+   
+   *get\under{}input\under{}size(self, inputs)*
+   #+BEGIN_EXAMPLE
+   Get the shape of the input. The result is used by self.format_output. This is
+   useful when you want to parse the output according to the input's shape (averaging
+   as an example). If no need, leave it as be.
+   
+   Args:
+   inputs(torch.Tensor): The input tensor.
+   
+   Returns:
+   Anything that you think would be useful when parsing the output.
+   
+   Default:
+   For torch.Tensor, return its shape. For a list, recursively check if the first
+   element is torch.Tensor and return its shape. Otherwise return None.
+   #+END_EXAMPLE
+   
+   *format\under{}data(self, inputs, labels, mode)*
+   #+BEGIN_EXAMPLE
+   Parse the inputs and labels at your need, according to the given mode. torch.Tensor
+   should be made into torch.autograd.Variable. The results should be ready for the
+   model to process.
+   
+   Args:
+   inputs(torch.Tensor): It can also be a nested list of torch.Tensor. This is the
+                        output data of the dataset.
+   labels(torch.Tensor): The output labels of the dataset.
+   mode(str):            The mode.
+   
+   Returns:
+   The parsed inputs and labels. If multiple inputs exist, place them in a list.
+   
+   Default:
+   By default it's assumed that both inputs and labels are instances of torch.Tensor,
+   and the corresponding torch.autograd.Variable are returned.
+   #+END_EXAMPLE
+   
+   *format\under{}output(self, outputs, input_size, mode)*
+   #+BEGIN_EXAMPLE
+   Format outputs according to the input_size computed before and the given mode, so that
+   it's ready for loss computation.
+   
+   The outputs is the direct output of your model, and this function should return the
+   parsed outputs (torch.autograd.Variable) for the following loss computation.
+   
+   Default:
+   Directly return the outputs.
+   #+END_EXAMPLE
+   
+   *cleanup\under{}batch(self, logger, outputs, labels, loss, batch, hz)*
+   #+BEGIN_EXAMPLE
+   After each batch, perform specific actions such as accuracy print and saving.
+   The concrete function should be implemented within the logger.
+   
+   Args:
+   logger: The logger object.
+   outputs(torch.autograd.Variable): The parsed outputs.
+   labels(torch.autograd.Variable):  The labels.
+   loss(torch.autograd.Variable):    The loss.
+   batch(int):                       Current batch index.
+   hz(float):                        The hertz of processing the current batch.
+   
+   Default:
+   By default the function assumes that
+   logger.cleanup_batch(outputs, labels, loss, batch, hz) is implemented and
+   directly use it.
+   #+END_EXAMPLE
+   
+   *cleanup\under{}epoch(self, logger)*
+   #+BEGIN_EXAMPLE
+   Similar to cleanup_batch, but for the whole epoch.
+   
+   Default:
+   Assumes that logger.cleanup_epoch() is implemented and directly use it.
+   #+END_EXAMPLE
+   
+* Write a Config File
+  The config files are stored in the ~myconfs~ directory and named as
+  ~config_1.py~, ~config_2.py~, ... ~config_[n].py~, each representing one of
+  the configuration (hyper-parameters, data paths, models to use and so on).
+  
+  In this manner, you needn't modify the main part of your code in order to apply
+  a new configuration. Rather, you just create a new config file and specify it
+  when running the program. The config file is in fact a python module defining
+  some global variables, and is dynamically loaded during runtime, passed among
+  functions like a normal python object.
+  
+  A sample config file is created as you create a new project. You can modify, add
+  or remove the variables at your need. But some of them are necessary so that you
+  can just modify them.
+  
+  #+CAPTION: Necessary Config Variables
+  | key                            | description                                                                                                                                                                                                |
+  |--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+  | MODEL\under{}NAME              | The model to use. A string representing the name of the model module, which is identical to the name of the model class.                                                                                   |
+  | PROJECT\under{}ROOT\under{}DIR | The project dir. By default it's the project dir you create. */Leave it unchanged./*                                                                                                                       |
+  | DATA\under{}DIR                | The directory to place your data (imdb, pretrained models and so on). */Leave it unchanged./*                                                                                                              |
+  | PRETRAIN\under{}PATH           | The pretrained model path.                                                                                                                                                                                 |
+  | MODEL\under{}DIR               | The directory to store trained model data. For example, model parameters, metric logs and so on. For config\under{}n.py, the data is stored under MODEL\under{}DIR/model\under{}n. */Leave it unchanged./* |
+  | STATE\under{}DIR               | The directory to store model parameters. By convention it's a subdirectory of MODEL\under{}DIR. */Leave it unchanged./*                                                                                    |
+  | IMG\under{}ROOT\under{}DIR     | The directory for the dataset to look up data.                                                                                                                                                             |
+  | IMDB\under{}PATH               | The path of the imdb file.                                                                                                                                                                                 |
+  | STATE\under{}PREFIX            | The name prefix of the saved model parameters. They're saved as {STATE\under{}PREFIX}\under{}{epoch\under{}id}.pth. */Leave it unchanged./*                                                                |
+  | NUM\under{}CLASSES             | Number of classes of the dataset.                                                                                                                                                                          |
+  | BATCH\under{}SIZE              | A dict specifying batch\under{}size for each mode.                                                                                                                                                         |
+  | MAX\under{}EPOCHS              | Number of epochs to train.                                                                                                                                                                                 |
+  | GPUS                           | A list of gpu ids. If more than one gpus are specified, the model will be running on multiple gpus. Otherwise, only use DEFAULT\under{}GPU.                                                                |
+  | DEFAULT\under{}GPU             | The default gpu to hold data. When running on multiple gpus, this should be one of the gpu specified in GPUS.                                                                                              |
+  | PARAM\under{}GROUPS            | See below.                                                                                                                                                                                                 |
+  
+  */Note: "Leave it unchanged" means that you don't need to modify it since the default setting is enough. You're able to change it but you should take care of where the files are placed./*
+  
+  The ~PARAM_GROUPS~ specifies how you wanna train you model. It's a list of dictionaries representing different param groups. Each dictionary should has at least two keys: ~params~ and ~lr~. The value of ~params~ is a list of strings, each representing a submodule of the model. The value of ~lr~ is the learning rate to be applied to these submodules. If the value of ~params~ only contains ~['default']~, it means all the remaining submodules except for those specified in other param groups. Other keys such as ~weight_decay~ are available, which depend on the optimizer's settings.
+  
+  Here's an example.
+  
+  #+BEGIN_SRC python
+  PARAM_GROUPS = [{
+    'params': ['fc'],
+    'lr': 1e-3
+  }, {
+    'params': ['default'],
+    'lr': 1e-4
+  }]
+  #+END_SRC
+  
+  In this example, the ~fc~ module is trained with a learning rate of ~1e-3~, while the rest are trained with ~1e-4~. Any module that is not mentioned in the ~PARAM_GROUPS~ won't require gradients computation, and won't be optimized.
+  
+* Prepare Your Data
+  By convention you should put your data in the ~DATA_DIR~ directory, so that the program can find them. Typical data includes:
+  
+  - ~imdb~ A pickled dictionary containing two keys: ~train~ and ~test~. Data of the train set is organized under the ~train~ key, and so for the ~test~ key.
+  - ~pretrained model~ When loading model parameters, the trainer proceeds in the following order:
+    1. Initialze the model according its ~initialize~ method.
+    2. Look for saved state files (~{STATE_PREFIX}_{epoch_id}.pth~). If found, load it. Otherwise go to 3.
+    3. Look for the pretrained model file according to ~PRETRAIN_PATH~. If the file exists, load it. Otherwise do nothing.
+	   
+* Run the Program
+  #+BEGIN_SRC shell-script
+  python main.py -c {config_number} [-m {mode}]
+  #+END_SRC
+  
+  Start to train the model with the {config_number} configuration under mode {mode}. {mode} can be one of ~{all, train, test}~. ~all~ is the default option and means alternatively train and test epochs until ~MAX_EPOCHS~. ~train~ means only train 1 epoch while ~test~ means only test 1 epoch.
+  
+* Continue and Clean
+  #+BEGIN_SRC shell-script
+  python scripts/clean -c {config_number}
+  #+END_SRC
+  
+  Clean the data generated by the ~{config_number}~ configuration.
+  
+  #+BEGIN_SRC shell-script
+  python script/cont {epoch_id} -c {config_number}
+  #+END_SRC
+  
+  For the ~{config_number}~ configuration, save the data until the ~{epoch_id}~ epoch, and delete those after it. Note that, for state files, only the ~{epoch_id}~ one would be reserved.
