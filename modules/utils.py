@@ -30,8 +30,6 @@ def check_latest_state(state_dir, prefix):
 
 
 def load_state_dict(model, pretrain_path, state_dir, prefix):
-    model.initialize(
-    )  # initialize new layers if necessary, or do other stuffs
     latest_state = check_latest_state(state_dir, prefix)
 
     if latest_state != -1:
@@ -59,7 +57,7 @@ def load_state_dict(model, pretrain_path, state_dir, prefix):
     else:
         print('==========>> build from scratch')
 
-    print('==========>> done loading initializing model')
+    print('==========>> done initializing model')
     return latest_state
 
 

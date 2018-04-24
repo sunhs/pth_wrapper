@@ -59,7 +59,9 @@
    *initialize(self)*
    #+BEGIN_EXAMPLE
    Perform necessary initialization. For example, initialize the last FC layer
-   with xavier_normal.
+   with xavier_normal. You need to explicitly call it in the
+   \under{}\under{}init\under{}\under{} since the trainer will not be responsible for
+   parameter initializing but only state dict loading.
    #+END_EXAMPLE
    
    *forward(self, x)*
