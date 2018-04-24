@@ -280,6 +280,7 @@
   | MAX\under{}EPOCHS              | Number of epochs to train.                                                                                                                                                                                 |
   | GPUS                           | A list of gpu ids. If more than one gpus are specified, the model will be running on multiple gpus. Otherwise, only use DEFAULT\under{}GPU.                                                                |
   | DEFAULT\under{}GPU             | The default gpu to hold data. When running on multiple gpus, this should be one of the gpu specified in GPUS.                                                                                              |
+  | NUM_WORKERS                    | Number of workers to use in dataloader.                                                                                                                                                                    |
   | PARAM\under{}GROUPS            | See below.                                                                                                                                                                                                 |
   
   */Note: "Leave it unchanged" means that you don't need to modify it since the default setting is enough. You're able to change it but you should take care of where the files are placed./*
@@ -298,7 +299,7 @@
   }]
   #+END_SRC
   
-  In this example, the ~fc~ module is trained with a learning rate of ~1e-3~, while the rest are trained with ~1e-4~. Any module that is not mentioned in the ~PARAM_GROUPS~ won't require gradients computation, and won't be optimized.
+  In this example, the ~fc~ module is trained with a learning rate of ~1e-3~, while the rest are trained with ~1e-4~. Any module that is not mentioned in the ~PARAM_GROUPS~ still requires gradient computation, but won't be optimized. Any module whose learning rate is set to 0 neither requires gradient computation nor will be optimized.
   
 * Prepare Your Data
   By convention you should put your data in the ~DATA_DIR~ directory, so that the program can find them. Typical data includes:
