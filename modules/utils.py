@@ -19,6 +19,10 @@ def parse_time(duration):
 
 def check_latest_state(state_dir, prefix):
     max_state = -1
+
+    if not os.path.exists(state_dir) or not os.path.isdir(state_dir):
+        return max_state
+
     f_names = os.listdir(state_dir)
     for f_name in f_names:
         if not f_name.startswith(prefix):
@@ -29,7 +33,7 @@ def check_latest_state(state_dir, prefix):
     return max_state
 
 
-def load_state_dict(model, pretrain_path, state_dir, prefix):
+def load_state_dict(model, pretrain_path, state_dir='', prefix=''):
     latest_state = check_latest_state(state_dir, prefix)
 
     if latest_state != -1:
@@ -38,7 +42,7 @@ def load_state_dict(model, pretrain_path, state_dir, prefix):
         print('==========>> resume from {}'.format(load_path))
         model.load_state_dict(torch.load(load_path))
 
-    elif pretrain_path:
+    elif pretrain_path and os.path.exists(pretrain_path):
         print('==========>> loading from pretrain: {}'.format(pretrain_path))
         model_state = model.state_dict()
         state_dict = torch.load(pretrain_path)
