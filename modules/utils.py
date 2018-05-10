@@ -147,19 +147,19 @@ def submodule_params(model, submodule_str):
 def get_param_groups(model, config):
     param_groups = []
     all_vars = list(model.named_parameters())
-    optional_var_names = []
-    default = None
+    non_default_var_names = []
+    default_param_group = None
 
     for cfg_param_group in config.PARAM_GROUPS:
         if cfg_param_group['params'][0] == 'default':
-            default = cfg_param_group.copy()
+            default_param_group = cfg_param_group.copy()
             continue
 
         module_names = cfg_param_group['params']
         named_params = []
         for module_name in module_names:
             named_params.extend(submodule_params(model, module_name))
-        optional_var_names.extend([e[0] for e in named_params])
+        non_default_var_names.extend([e[0] for e in named_params])
 
         if cfg_param_group['lr'] == 0:
             for e in named_params:
@@ -167,18 +167,20 @@ def get_param_groups(model, config):
             continue
 
         param_group = cfg_param_group.copy()
-        param_group['params'] = [e[1] for e in named_params]
+        param_group['params'] = [
+            e[1] for e in named_params if e[1].requires_grad
+        ]
         param_groups.append(param_group)
 
-    default_vars = [e for e in all_vars if e[0] not in optional_var_names]
+    default_vars = [e for e in all_vars if e[0] not in non_default_var_names]
 
-    if default and default_vars:
-        if default['lr'] == 0:
+    if default_param_group and default_vars:
+        if default_param_group['lr'] == 0:
             for e in default_vars:
                 e[1].requires_grad = False
         else:
-            default['params'] = [e[1] for e in default_vars]
-            param_groups.append(default)
+            default_param_group['params'] = [e[1] for e in default_vars]
+            param_groups.append(default_param_group)
 
     return param_groups
 
