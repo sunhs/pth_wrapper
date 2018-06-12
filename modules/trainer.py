@@ -2,7 +2,6 @@ import os
 import time
 
 import torch
-from torch.autograd import Variable
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import dataloader, sampler
@@ -97,8 +96,10 @@ class Trainer:
 
         if mode == 'train':
             self.model.train()
+            torch.set_grad_enabled(True)
         elif mode == 'test':
             self.model.eval()
+            torch.set_grad_enabled(False)
 
         if len(self.config.GPUS) > 1:
             model = nn.DataParallel(
@@ -159,12 +160,6 @@ class Trainer:
             return None
 
     def format_data(self, inputs, labels, mode):
-        inputs = Variable(inputs.cuda(self.config.DEFAULT_GPU))
-        labels = Variable(labels.cuda(self.config.DEFAULT_GPU))
-
-        if mode == 'test':
-            inputs.volatile = True
-
         return inputs, labels
 
     def format_output(self, outputs, input_size, mode):

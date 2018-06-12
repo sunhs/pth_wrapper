@@ -71,7 +71,9 @@ class MAP:
         self.targets = None
 
     def add(self, scores, targets, copy=False):
-        """Scores and target are both numpy arrays"""
+        """Scores and target are both cuda tensors"""
+        scores = scores.cpu().numpy()
+        targets = targets.cpu().numpy()
         if self.scores is None or self.targets is None:
             if not copy:
                 self.scores = scores
@@ -179,7 +181,9 @@ def get_param_groups(model, config):
             for e in default_vars:
                 e[1].requires_grad = False
         else:
-            default_param_group['params'] = [e[1] for e in default_vars]
+            default_param_group['params'] = [
+                e[1] for e in default_vars if e[1].requires_grad
+            ]
             param_groups.append(default_param_group)
 
     return param_groups
