@@ -23,6 +23,9 @@ def check_latest_state(state_dir, prefix):
     if not os.path.exists(state_dir) or not os.path.isdir(state_dir):
         return max_state
 
+    if not prefix:
+        raise ValueError("Specified state_dir but no prefix!")
+
     f_names = os.listdir(state_dir)
     for f_name in f_names:
         if not f_name.startswith(prefix):

@@ -16,7 +16,7 @@ class Trainer:
 
     Interfaces:
         compute_loss(self, outputs, labels)
-        setup_logger(self, epoch, mode, num_batch, ds_size)
+        setup_handler(self, epoch, mode, num_batch, ds_size)
 
     Methods:
         setup_optimizer(self)
@@ -28,22 +28,22 @@ class Trainer:
         setup_dataloader(self, mode)
             default: pytorch dataloader
 
-        get_input_size(self, inputs)
+        get_input_size(self, data)
             defalut: For torch.Tensor, return its shape. For a list, recursively
             check if the first element is torch.Tensor and return its shape.
             Otherwise return None.
 
-        format_data(self, inputs, labels, mode)
-            default: Construct a Variable for inputs and labels.
+        format_data(self, data, mode)
+            default: Construct Variables for the data.
 
         format_output(self, outputs, input_size, mode)
             default: Directly return the outputs. 
     
-        cleanup_batch(self, logger, outputs, labels, loss, batch, hz)
-            default: Use logger.cleanup_batch(outputs, labels, loss, batch, hz)
+        cleanup_batch(self, handler, data, outputs, loss, batch, hz)
+            default: Use handler.cleanup_batch(data, outputs, loss, batch, hz)
 
-        cleanup_epoch(self, logger)
-            default: Use logger.cleanup_epoch()
+        cleanup_epoch(self, handler)
+            default: Use handler.cleanup_epoch()
     """
 
     def __init__(self, model, dataset, config):
@@ -75,9 +75,14 @@ class Trainer:
         t = time.time()
         print('train 1 epoch in {}\n'.format(utils.parse_time(t - s)))
         self.model.cpu()
-        torch.save(self.model.state_dict(),
-                   os.path.join(self.config.STATE_DIR, '{}_{}.pth'.format(
-                       self.config.STATE_PREFIX, epoch)))
+
+        if (not getattr(self.config, 'SAVE_EPOCH_FREQ', None)
+                or epoch % self.config.SAVE_EPOCH_FREQ == 0):
+            torch.save(
+                self.model.state_dict(),
+                os.path.join(
+                    self.config.STATE_DIR, '{}_{}.pth'.format(
+                        self.config.STATE_PREFIX, epoch)))
         self.latest_state = epoch
 
     def test_epoch(self):
@@ -111,27 +116,26 @@ class Trainer:
 
         data_loader = self.setup_dataloader(mode)
         num_batch = len(data_loader)
-        logger = self.setup_logger(epoch, mode, num_batch,
-                                   len(self.dataset[mode]))
+        handler = self.setup_handler(epoch, mode, num_batch,
+                                     len(self.dataset[mode]))
 
         for i, data in enumerate(data_loader):
             model.zero_grad()
             s = time.time()
-            inputs, labels = data
-            input_size = self.get_input_size(inputs)
-            inputs, labels = self.format_data(inputs, labels, mode)
-            outputs = self.format_output(model(inputs), input_size, mode)
-            loss = self.compute_loss(outputs, labels)
+            input_size = self.get_input_size(data)
+            data = self.format_data(data, mode)
+            outputs = self.format_output(model(data), input_size, mode)
+            loss = self.compute_loss(outputs, data)
             t = time.time()
             hz = outputs.size(0) / (t - s)
 
-            self.cleanup_batch(logger, outputs, labels, loss, i, hz)
+            self.cleanup_batch(handler, data, outputs, loss, i, hz)
 
             if mode == 'train':
                 loss.backward()
                 self.optimizer.step()
 
-        self.cleanup_epoch(logger)
+        self.cleanup_epoch(handler)
 
     def setup_optimizer(self):
         param_groups = utils.get_param_groups(self.model, self.config)
@@ -151,31 +155,31 @@ class Trainer:
             collate_fn=dataset.collate_fn)
         return data_loader
 
-    def get_input_size(self, inputs):
-        if isinstance(inputs, torch.Tensor):
-            return inputs.size()
-        elif isinstance(inputs, list):
-            return self.get_input_size(inputs[0])
-        else:
-            return None
+    def get_input_size(self, data):
+        if isinstance(data, torch.Tensor):
+            return data.size()
+        if isinstance(data, (list, tuple)):
+            return self.get_input_size(data[0])
+        return None
 
-    def format_data(self, inputs, labels, mode):
+    def format_data(self, data, mode):
+        inputs, labels = data
         return inputs, labels
 
     def format_output(self, outputs, input_size, mode):
         return outputs
 
-    def cleanup_batch(self, logger, outputs, labels, loss, batch, hz):
-        logger.cleanup_batch(outputs, labels, loss, batch, hz)
+    def cleanup_batch(self, handler, data, outputs, loss, batch, hz):
+        handler.cleanup_batch(data, outputs, loss, batch, hz)
 
-    def cleanup_epoch(self, logger):
-        logger.cleanup_epoch()
+    def cleanup_epoch(self, handler):
+        handler.cleanup_epoch()
 
-    def compute_loss(self, outputs, labels):
+    def compute_loss(self, outputs, data):
         raise NotImplementedError
 
-    def setup_logger(self, epoch, mode, num_batch, ds_size):
-        """A logger should have the following methods.
+    def setup_handler(self, epoch, mode, num_batch, ds_size):
+        """A handler should have the following methods.
         cleanup_batch(self, outputs, labels, loss, batch, hz)
         cleanup_epoch()
         """
