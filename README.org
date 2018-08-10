@@ -275,14 +275,20 @@
   | IMG\under{}ROOT\under{}DIR     | The directory for the dataset to look up data.                                                                                                                                                             |
   | IMDB\under{}PATH               | The path of the imdb file.                                                                                                                                                                                 |
   | STATE\under{}PREFIX            | The name prefix of the saved model parameters. They're saved as {STATE\under{}PREFIX}\under{}{epoch\under{}id}.pth. */Leave it unchanged./*                                                                |
-  | NUM\under{}CLASSES             | Number of classes of the dataset.                                                                                                                                                                          |
-  | BATCH\under{}SIZE              | A dict specifying batch\under{}size for each mode.                                                                                                                                                         |
   | MAX\under{}EPOCHS              | Number of epochs to train.                                                                                                                                                                                 |
+  | BATCH\under{}SIZE              | A dict specifying batch\under{}size for each mode.                                                                                                                                                         |
+  | PARAM\under{}GROUPS            | See below.                                                                                                                                                                                                 |
   | GPUS                           | A list of gpu ids. If more than one gpus are specified, the model will be running on multiple gpus. Otherwise, only use DEFAULT\under{}GPU.                                                                |
   | DEFAULT\under{}GPU             | The default gpu to hold data. When running on multiple gpus, this should be one of the gpu specified in GPUS.                                                                                              |
   | NUM_WORKERS                    | Number of workers to use in dataloader.                                                                                                                                                                    |
-  | PARAM\under{}GROUPS            | See below.                                                                                                                                                                                                 |
   
+  #+CAPTION: Optional Config Variables
+  | key                           | description                                                                      |
+  |-------------------------------+----------------------------------------------------------------------------------|
+  | SAVE\under{}EPOCH\under{}FREQ | Frequency to save model weights (in epochs). If not specified, save every epoch. |
+  | EMAIL                         | True or False. Toggle to send the results via email after every test epoch.      |
+  | EMAIL_ADDR                    | If `EMAIL` is True, set the email address to send the email to.                  |
+
   */Note: "Leave it unchanged" means that you don't need to modify it since the default setting is enough. You're able to change it but you should take care of where the files are placed./*
   
   The ~PARAM_GROUPS~ specifies how you wanna train you model. It's a list of dictionaries representing different param groups. Each dictionary should has at least two keys: ~params~ and ~lr~. The value of ~params~ is a list of strings, each representing a submodule of the model. The value of ~lr~ is the learning rate to be applied to these submodules. If the value of ~params~ only contains ~['default']~, it means all the remaining submodules except for those specified in other param groups. Other keys such as ~weight_decay~ are available, which depend on the optimizer's settings.

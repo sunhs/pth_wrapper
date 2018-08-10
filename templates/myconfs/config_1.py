@@ -19,7 +19,6 @@ STATE_PREFIX = 'epoch'
 
 # Hypers and devices.
 MAX_EPOCHS = 2400
-SAVE_EPOCH_FREQ = 40
 BATCH_SIZE = {'train': 32, 'test': 32}
 PARAM_GROUPS = [{
     'params': ['default'],
@@ -35,29 +34,10 @@ DEFAULT_GPU = 2
 NUM_WORKERS = 8
 
 # Optional.
-MILESTONES = [800, 1600]
+SAVE_EPOCH_FREQ = 40
 # uncomment these lines to send logs to your email
 # EMAIL = True
 # EMAIL_ADDR = 'Your Email Address'
-
-######################################################################
-# East
-######################################################################
-TEST_SIZE = (704, 1280)  # (H, W)
-BACKBONE = 'resnet50'
-MIN_CROP_SIDE_RATIO = 0.1
-BACKGROUND_RATIO = 3.0 / 8
-RANDOM_SCALE = [0.5, 1, 2, 3]
-TRAIN_INPUT_SIZE = 512
-MIN_TEXT_SIZE = 8
-
-######################################################################
-# Deepcoloring
-######################################################################
-MAX_COLOR = 9
-MAX_INS = 30
-HALO_MARGIN = 21
-K_NEG = 7
 
 if not os.path.exists(STATE_DIR):
     os.makedirs(STATE_DIR)
