@@ -43,11 +43,13 @@ def mod_train_log_file(checkpoint, config):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', type=int, default=1)
+    parser.add_argument('-a', '--app', type=str)
+    parser.add_argument('-c', '--config', type=int, default=1)
     parser.add_argument(
         'checkpoint', type=int, help='Checkpoint to start from.')
     args = parser.parse_args()
-    config = importlib.import_module('myconfs.config_{}'.format(args.c))
+    config = importlib.import_module('{}.confs.config_{}'.format(
+        args.app, args.config))
     checkpoint = args.checkpoint
     cont(checkpoint, config)
 

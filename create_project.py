@@ -2,57 +2,30 @@ import argparse
 import fileinput
 import os
 import shutil
+import sys
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-n', type=str)
-    parser.add_argument('-d', type=str)
+    parser.add_argument('-p', '--proj', type=str, help='The project name.')
+    parser.add_argument('-a', '--app', type=str, help='Name of the first app.')
     args = parser.parse_args()
-    project_name = args.n
-    project_dir_name = args.d
+    project_name = args.proj
+    app_name = args.app
 
     cur_dir = os.getcwd()
-    dst_dir = os.path.join(cur_dir, project_dir_name)
+    dst_dir = os.path.join(cur_dir, project_name)
     template_dir = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'templates')
 
+    if os.path.exists(dst_dir) and os.path.isdir(dst_dir):
+        print(
+            "A directory with the same name exists! Use another project name.")
+        sys.exit(1)
+
     shutil.copytree(template_dir, dst_dir)
-
-    # modify main.py
-    main_src_path = os.path.join(dst_dir, 'project_name_main.py')
-    main_dst_path = os.path.join(dst_dir, 'main.py')
-    with open(main_src_path, 'r') as old_f:
-        with open(main_dst_path, 'w') as new_f:
-            for line in old_f:
-                if 'project_name' in line:
-                    line = line.replace('project_name', project_name)
-                if 'ProjectName' in line:
-                    line = line.replace('ProjectName', project_name.title())
-                new_f.write(line)
-    os.remove(main_src_path)
-
-    # modify dataset
-    dataset_src_path = os.path.join(dst_dir, 'project_name_dataset.py')
-    dataset_dst_path = os.path.join(dst_dir, project_name + '_dataset.py')
-    with open(dataset_src_path, 'r') as old_f:
-        with open(dataset_dst_path, 'w') as new_f:
-            for line in old_f:
-                if 'ProjectName' in line:
-                    line = line.replace('ProjectName', project_name.title())
-                new_f.write(line)
-    os.remove(dataset_src_path)
-
-    # modify trainer
-    trainer_src_path = os.path.join(dst_dir, 'project_name_trainer.py')
-    trainer_dst_path = os.path.join(dst_dir, project_name + '_trainer.py')
-    with open(trainer_src_path, 'r') as old_f:
-        with open(trainer_dst_path, 'w') as new_f:
-            for line in old_f:
-                if 'ProjectName' in line:
-                    line = line.replace('ProjectName', project_name.title())
-                new_f.write(line)
-    os.remove(trainer_src_path)
+    shutil.move(
+        os.path.join(dst_dir, 'app_dir'), os.path.join(dst_dir, app_name))
 
 
 if __name__ == '__main__':
