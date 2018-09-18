@@ -6,13 +6,15 @@ import pickle
 ######################################################################
 # Names and paths.
 PROJ_ROOT_DIR = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), '..', '..')
+    os.path.dirname(os.path.abspath(__file__)), '..', '..'
+)
 APP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 DATA_DIR = os.path.join(PROJ_ROOT_DIR, 'data')
 PRETRAIN_PATH = ''
 MODEL_DIR = os.path.join(
-    APP_DIR, 'save_dir', 'model_{}'.format(
-        os.path.basename(__file__).rsplit('.')[0].split('_')[1]))
+    APP_DIR, 'save_dir',
+    'model_{}'.format(os.path.basename(__file__).rsplit('.')[0].split('_')[1])
+)
 STATE_DIR = os.path.join(MODEL_DIR, 'states')
 IMG_ROOT_DIR = '/root/share/dataset/icdar15_it'
 IMDB_PATH = os.path.join(DATA_DIR, 'imdb.pkl')
@@ -21,15 +23,17 @@ STATE_PREFIX = 'epoch'
 # Hypers and devices.
 MAX_EPOCHS = 1200
 BATCH_SIZE = {'train': 32, 'test': 1}
-PARAM_GROUPS = [{
-    'params': ['default'],
-    'lr': 1e-4,
-    'weight_decay': 1e-5
-}, {
-    'params': ['psp', 'fuse54', 'fuse43', 'fuse32', 'color_head'],
-    'lr': 1e-3,
-    'weight_decay': 1e-5
-}]
+PARAM_GROUPS = [
+    {
+        'params': ['default'],
+        'lr': 1e-4,
+        'weight_decay': 1e-5
+    }, {
+        'params': ['psp', 'fuse54', 'fuse43', 'fuse32', 'color_head'],
+        'lr': 1e-3,
+        'weight_decay': 1e-5
+    }
+]
 GPUS = []
 DEFAULT_GPU = 2
 NUM_WORKERS = 8

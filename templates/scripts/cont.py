@@ -46,10 +46,12 @@ def main():
     parser.add_argument('-a', '--app', type=str)
     parser.add_argument('-c', '--config', type=int, default=1)
     parser.add_argument(
-        'checkpoint', type=int, help='Checkpoint to start from.')
+        'checkpoint', type=int, help='Checkpoint to start from.'
+    )
     args = parser.parse_args()
-    config = importlib.import_module('{}.confs.config_{}'.format(
-        args.app, args.config))
+    config = importlib.import_module(
+        '{}.confs.config_{}'.format(args.app, args.config)
+    )
     checkpoint = args.checkpoint
     cont(checkpoint, config)
 

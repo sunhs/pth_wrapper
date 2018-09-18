@@ -11,6 +11,7 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--app', type=str)
     parser.add_argument('-c', '--config', type=int, default=1)
     args = parser.parse_args()
-    config = importlib.import_module('{}.confs.config_{}'.format(
-        args.app, args.config))
+    config = importlib.import_module(
+        '{}.confs.config_{}'.format(args.app, args.config)
+    )
     shutil.rmtree(config.MODEL_DIR)

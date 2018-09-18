@@ -40,8 +40,9 @@ def load_state_dict(model, pretrain_path, state_dir='', prefix=''):
     latest_state = check_latest_state(state_dir, prefix)
 
     if latest_state != -1:
-        load_path = os.path.join(state_dir, '{}_{}.pth'.format(
-            prefix, latest_state))
+        load_path = os.path.join(
+            state_dir, '{}_{}.pth'.format(prefix, latest_state)
+        )
         print('==========>> resume from {}'.format(load_path))
         model.load_state_dict(torch.load(load_path))
 
@@ -145,8 +146,10 @@ def submodule_params(model, submodule_str):
     for child in children:
         module = getattr(module, child)
 
-    return [('{}.{}'.format(submodule_str, e[0]), e[1])
-            for e in module.named_parameters()]
+    return [
+        ('{}.{}'.format(submodule_str, e[0]), e[1])
+        for e in module.named_parameters()
+    ]
 
 
 def get_param_groups(model, config):

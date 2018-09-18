@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 
 import torch
@@ -6,7 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import dataloader, sampler
 
-from my_modules.modules import utils
+from . import utils
 
 
 class Trainer:
@@ -30,7 +31,15 @@ class Trainer:
         self.lr_scheduler = self.setup_lr_scheduler()
         self.latest_state = utils.load_state_dict(
             self.model, self.config.PRETRAIN_PATH, self.config.STATE_DIR,
-            self.config.STATE_PREFIX)
+            self.config.STATE_PREFIX
+        )
+
+        if config.DEFAULT_GPU is not None:
+            assert config.DEFAULT_GPU >= 0
+            assert torch.cuda.is_available()
+            self.device = torch.device('cuda:' + str(config.DEFAULT_GPU))
+        else:
+            self.device = torch.device('cpu')
 
     def train(self, test=True):
         """The training process."""
@@ -50,13 +59,18 @@ class Trainer:
         print('train 1 epoch in {}\n'.format(utils.parse_time(t - s)))
         self.model.cpu()
 
-        if (not getattr(self.config, 'SAVE_EPOCH_FREQ', None)
-                or epoch % self.config.SAVE_EPOCH_FREQ == 0):
+        if (
+            not getattr(self.config, 'SAVE_EPOCH_FREQ', None) or
+            epoch % self.config.SAVE_EPOCH_FREQ == 0 or
+            epoch == self.config.MAX_EPOCHS
+        ):
             torch.save(
                 self.model.state_dict(),
                 os.path.join(
-                    self.config.STATE_DIR, '{}_{}.pth'.format(
-                        self.config.STATE_PREFIX, epoch)))
+                    self.config.STATE_DIR,
+                    '{}_{}.pth'.format(self.config.STATE_PREFIX, epoch)
+                )
+            )
         self.latest_state = epoch
 
     def test_epoch(self):
@@ -68,10 +82,15 @@ class Trainer:
         print('test 1 epoch in {}\n\n\n'.format(utils.parse_time(t - s)))
 
     def _process_epoch(self, epoch, mode):
-        print('\033[1;32m{}: epoch {:3d}/{:3d}\033[0m'.format(
-            mode, epoch, self.config.MAX_EPOCHS))
+        color_code = '\033[1;32m' if sys.platform != 'win32' else ''
+        end_color_code = '\033[0m' if sys.platform != 'win32' else ''
+        print(
+            color_code + \
+            '{}: epoch {:3d}/{:3d}'.format(mode, epoch, self.config.MAX_EPOCHS) + \
+            end_color_code
+        )
 
-        self.model.cuda(self.config.DEFAULT_GPU)
+        self.model.to(self.device)
 
         if mode == 'train':
             self.model.train()
@@ -84,14 +103,18 @@ class Trainer:
             model = nn.DataParallel(
                 self.model,
                 self.config.GPUS,
-                output_device=self.config.DEFAULT_GPU)
+                output_device=self.config.DEFAULT_GPU
+            )
         else:
             model = self.model
 
         data_loader = self.setup_dataloader(mode)
-        num_batch = len(data_loader)
-        handler = self.setup_handler(epoch, mode, num_batch,
-                                     len(self.dataset[mode]))
+        handler = self.setup_handler(
+            epoch,
+            mode,
+            num_batch=len(data_loader),
+            ds_size=len(self.dataset[mode])
+        )
 
         for i, data in enumerate(data_loader):
             loss = None
@@ -151,7 +174,8 @@ class Trainer:
             batch_size=self.config.BATCH_SIZE[mode],
             sampler=sampler.RandomSampler(dataset),
             num_workers=self.config.NUM_WORKERS,
-            collate_fn=dataset.collate_fn)
+            collate_fn=dataset.collate_fn
+        )
         return data_loader
 
     def format_data(self, data, mode):
@@ -171,9 +195,9 @@ class Trainer:
         """
         if isinstance(data, (list, tuple)):
             for i in range(len(data)):
-                data[i] = data[i].cuda(self.config.DEFAULT_GPU)
+                data[i] = data[i].to(self.device)
             return data, data[0].size(0)
-        return data.cuda(self.config.DEFAULT_GPU), data.size(0)
+        return data.to(self.device), data.size(0)
 
     def get_input(self, data, mode):
         """Produce the input data which will be directly fed to the model.

@@ -17,22 +17,22 @@ def main():
         choices=['all', 'train', 'test'],
         default='all',
         help='The mode to run. `all` will train and test epochs alternately. \
-        `train` and `test` will train and test 1 epoch, respectively.')
+        `train` and `test` will train and test 1 epoch, respectively.'
+    )
     parser.add_argument(
-        '-c',
-        '--config',
-        type=int,
-        default=1,
-        help='Which config file to use.')
+        '-c', '--config', type=int, default=1, help='Which config file to use.'
+    )
     args = parser.parse_args()
 
-    config = importlib.import_module('{}.confs.config_{}'.format(
-        args.app, args.config))
+    config = importlib.import_module(
+        '{}.confs.config_{}'.format(args.app, args.config)
+    )
     torch.cuda.set_device(config.DEFAULT_GPU)
 
     print('==========>> build dataset')
-    dataset_module = importlib.import_module('{}.dataloader.dataset'.format(
-        args.app))
+    dataset_module = importlib.import_module(
+        '{}.dataloader.dataset'.format(args.app)
+    )
     dataset = {
         'train': dataset_module.Dataset(config, 'train'),
         'test': dataset_module.Dataset(config, 'test')
@@ -43,8 +43,9 @@ def main():
     model = model_module.Model(config)
 
     print('==========>> build trainer')
-    trainer_module = importlib.import_module('{}.trainer.trainer'.format(
-        args.app))
+    trainer_module = importlib.import_module(
+        '{}.trainer.trainer'.format(args.app)
+    )
     trainer = trainer_module.Trainer(model, dataset, config)
 
     print('==========>> start to run model')

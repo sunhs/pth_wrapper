@@ -3,11 +3,14 @@ import pickle
 from torch.utils.data import dataset
 from torchvision import transforms
 
-TRANSFORMS = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize(
-        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
+TRANSFORMS = transforms.Compose(
+    [
+        transforms.ToTensor(),
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+        )
+    ]
+)
 
 
 class Dataset(dataset.Dataset):

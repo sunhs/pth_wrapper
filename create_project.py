@@ -16,16 +16,19 @@ def main():
     cur_dir = os.getcwd()
     dst_dir = os.path.join(cur_dir, project_name)
     template_dir = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 'templates')
+        os.path.dirname(os.path.abspath(__file__)), 'templates'
+    )
 
     if os.path.exists(dst_dir) and os.path.isdir(dst_dir):
         print(
-            "A directory with the same name exists! Use another project name.")
+            "A directory with the same name exists! Use another project name."
+        )
         sys.exit(1)
 
     shutil.copytree(template_dir, dst_dir)
     shutil.move(
-        os.path.join(dst_dir, 'app_dir'), os.path.join(dst_dir, app_name))
+        os.path.join(dst_dir, 'app_dir'), os.path.join(dst_dir, app_name)
+    )
 
 
 if __name__ == '__main__':
