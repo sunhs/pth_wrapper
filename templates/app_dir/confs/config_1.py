@@ -10,15 +10,15 @@ PROJ_ROOT_DIR = os.path.join(
 )
 APP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 DATA_DIR = os.path.join(PROJ_ROOT_DIR, 'data')
-PRETRAIN_PATH = ''
 MODEL_DIR = os.path.join(
     APP_DIR, 'save_dir',
     'model_{}'.format(os.path.basename(__file__).rsplit('.')[0].split('_')[1])
 )
+PRETRAIN_PATH = ''
 STATE_DIR = os.path.join(MODEL_DIR, 'states')
-IMG_ROOT_DIR = '/root/share/dataset/icdar15_it'
-IMDB_PATH = os.path.join(DATA_DIR, 'imdb.pkl')
 STATE_PREFIX = 'epoch'
+STATE_INDEX = None
+SAVE_EPOCH_FREQ = 40
 
 # Hypers and devices.
 MAX_EPOCHS = 1200
@@ -37,12 +37,6 @@ PARAM_GROUPS = [
 GPUS = []
 DEFAULT_GPU = 2
 NUM_WORKERS = 8
-
-# Optional.
-SAVE_EPOCH_FREQ = 40
-# uncomment these lines to send logs to your email
-# EMAIL = True
-# EMAIL_ADDR = 'Your Email Address'
 
 if not os.path.exists(STATE_DIR):
     os.makedirs(STATE_DIR)

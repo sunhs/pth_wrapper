@@ -30,8 +30,8 @@ class Trainer:
         self.optimizer = self.setup_optimizer()
         self.lr_scheduler = self.setup_lr_scheduler()
         self.latest_state = utils.load_state_dict(
-            self.model, self.config.PRETRAIN_PATH, self.config.STATE_DIR,
-            self.config.STATE_PREFIX
+            self.model, self.config.STATE_DIR, self.config.STATE_PREFIX,
+            self.config.STATE_INDEX, self.config.PRETRAIN_PATH
         )
 
         if config.DEFAULT_GPU is not None:
@@ -60,7 +60,7 @@ class Trainer:
         self.model.cpu()
 
         if (
-            not getattr(self.config, 'SAVE_EPOCH_FREQ', None) or
+            not self.config.SAVE_EPOCH_FREQ or
             epoch % self.config.SAVE_EPOCH_FREQ == 0 or
             epoch == self.config.MAX_EPOCHS
         ):

@@ -36,10 +36,15 @@ def check_latest_state(state_dir, prefix):
     return max_state
 
 
-def load_state_dict(model, pretrain_path, state_dir='', prefix=''):
+def load_state_dict(
+    model, state_dir='', prefix='', index=None, pretrain_path=''
+):
     latest_state = check_latest_state(state_dir, prefix)
 
     if latest_state != -1:
+        if index is not None:
+            assert index >= 0 and index <= latest_state
+            latest_state = index
         load_path = os.path.join(
             state_dir, '{}_{}.pth'.format(prefix, latest_state)
         )
