@@ -1,4 +1,4 @@
-from my_modules.modules import trainer
+from pth_wrapper import trainer
 
 
 class Trainer(trainer.Trainer):

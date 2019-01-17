@@ -1,5 +1,5 @@
 ## Install
-Clone the repository to somewhere, navigate into `my_modules` and enter:
+Clone the repository to somewhere, navigate into `pth_wrapper` and enter:
 
 ```
 pip install -e .
@@ -58,7 +58,7 @@ This will create a folder `project` in the directory where you issue the command
 
   The trainer is responsible for model checkpoint loading, input data parsing,
   loss computation, logging, checkpoint saving and so on. Most of the core parts
-  are implemented within `my_modules.modules.trainer`. Your trainer should
+  are implemented within `pth_wrapper.trainer`. Your trainer should
   subclass this core trainer and override its interfaces. Refer to `trainer.py`
   in the templates to see what's needed in your trainer code.
    
