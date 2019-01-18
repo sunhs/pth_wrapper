@@ -63,53 +63,6 @@ def init_model(
     return latest_state
 
 
-class MAP:
-    def __init__(self):
-        self.scores = None
-        self.targets = None
-
-    def add(self, scores, targets, copy=False):
-        """Scores and target are both cuda tensors"""
-        scores = scores.cpu().numpy()
-        targets = targets.cpu().numpy()
-        if self.scores is None or self.targets is None:
-            if not copy:
-                self.scores = scores
-                self.targets = targets
-            else:
-                self.scores = scores.copy()
-                self.targets = targets.copy()
-            return
-
-        self.scores = np.concatenate([self.scores, scores])
-        self.targets = np.concatenate([self.targets, targets])
-
-    def map(self):
-        # copied from https://github.com/zxwu/lsvc2017
-        probs = self.scores
-        labels = self.targets
-        mAP = np.zeros((probs.shape[1], ))
-
-        for i in range(probs.shape[1]):
-            iClass = probs[:, i]
-            iY = labels[:, i]
-            idx = np.argsort(-iClass)
-            iY = iY[idx]
-            count = 0
-            ap = 0.0
-            skip_count = 0
-            for j in range(iY.shape[0]):
-                if iY[j] == 1:
-                    count += 1
-                    ap += count / float(j + 1 - skip_count)
-                if iY[j] == -1:
-                    skip_count += 1
-                if count != 0:
-                    mAP[i] = ap / count
-        return np.mean(mAP)
-        # return mAP
-
-
 def occupy_gpu(model, trainer, config):
     gpus, default_gpu = config.GPUS, config.DEFAULT_GPU
     model.train()

@@ -2,7 +2,7 @@ import os
 import pickle
 
 ######################################################################
-# Needed by my_modules.
+# Needed by pth_wrapper.
 ######################################################################
 # Names and paths.
 PROJ_ROOT_DIR = os.path.join(
@@ -44,10 +44,12 @@ if not os.path.exists(STATE_DIR):
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
-with open(os.path.join(MODEL_DIR, 'log.pkl'), 'wb') as f:
-    log = {'train': {'loss': []}, 'test': {'loss': []}}
-    pickle.dump(log, f)
+if not os.path.exists(os.path.join(MODEL_DIR, 'log.pkl')):
+    log = {'train': {'loss': [], }, 'test': {'loss': [], }}
+    with open(os.path.join(MODEL_DIR, 'log.pkl'), 'wb') as f:
+        pickle.dump(log, f)
 
-with open(os.path.join(MODEL_DIR, 'train_log.pkl'), 'wb') as f:
+if not os.path.exists(os.path.join(MODEL_DIR, 'train_log.pkl')):
     train_log = []
-    pickle.dump(train_log, f)
+    with open(os.path.join(MODEL_DIR, 'train_log.pkl'), 'wb') as f:
+        pickle.dump(train_log, f)

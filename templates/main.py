@@ -50,7 +50,7 @@ def main():
 
     print('==========>> start to run model')
     if args.mode == 'all':
-        trainer.train(test=False)
+        trainer.train(test=True)
     elif args.mode == 'train':
         trainer.train_epoch()
     elif args.mode == 'test':
