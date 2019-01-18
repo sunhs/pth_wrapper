@@ -66,7 +66,7 @@ class Trainer:
                 self.model.state_dict(),
                 os.path.join(
                     self.config.STATE_DIR,
-                    '{}_{}.pth'.format(self.config.STATE_PREFIX, epoch)
+                    '{}.pth-{:04d}'.format(self.config.STATE_PREFIX, epoch)
                 )
             )
         self.latest_state = epoch

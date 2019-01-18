@@ -14,7 +14,7 @@ def cont(checkpoint, config):
 
 
 def rm_state_file(checkpoint, config):
-    checkpoint_fname = '{}_{}.pth'.format(config.STATE_PREFIX, checkpoint)
+    checkpoint_fname = '{}.pth-{:04d}'.format(config.STATE_PREFIX, checkpoint)
     file_list = os.listdir(config.STATE_DIR)
     for file_name in file_list:
         if file_name != checkpoint_fname:
