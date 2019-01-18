@@ -31,7 +31,7 @@ def main():
 
     print('==========>> build dataset')
     dataset_module = importlib.import_module(
-        '{}.dataloader.dataset'.format(args.app)
+        '{}.dataset.dataset'.format(args.app)
     )
     dataset = {
         'train': dataset_module.Dataset(config, 'train'),
