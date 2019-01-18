@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(
-    name='my_modules',
+    name='pth_wrapper',
     version='0.1',
-    packages=['modules'],
+    packages=['pth_wrapper'],
     scripts=['create_project.py']
 )

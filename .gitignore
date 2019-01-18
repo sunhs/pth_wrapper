@@ -2,3 +2,4 @@
 *.egg-info
 *pycache*
 *.DS_Store*
+*.vscode*

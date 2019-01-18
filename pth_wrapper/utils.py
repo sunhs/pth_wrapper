@@ -30,15 +30,16 @@ def check_latest_state(state_dir, prefix):
     for f_name in f_names:
         if not f_name.startswith(prefix):
             continue
-        epoch = int(os.path.splitext(f_name)[0].split('_')[1])
+        epoch = int(f_name.split('-')[1])
         if epoch > max_state:
             max_state = epoch
     return max_state
 
 
-def load_state_dict(
+def init_model(
     model, state_dir='', prefix='', index=None, pretrain_path=''
 ):
+    model.initialize()
     latest_state = check_latest_state(state_dir, prefix)
 
     if latest_state != -1:
@@ -53,24 +54,12 @@ def load_state_dict(
 
     elif pretrain_path and os.path.exists(pretrain_path):
         print('==========>> loading from pretrain: {}'.format(pretrain_path))
-        model_state = model.state_dict()
-        state_dict = torch.load(pretrain_path)
-        for name, param in state_dict.items():
-            if name not in model_state:
-                print('Key missing: {}'.format(name))
-                continue
-            if param.size() != model_state[name].size():
-                print('Size not match: {}'.format(name))
-                continue
-            if isinstance(param, (nn.Parameter, Variable)):
-                # backwards compatibility for serialized parameters
-                param = param.data
-            model_state[name].copy_(param)
+        model.load_state_dict(torch.load(pretrain_path), strict=False)
 
     else:
         print('==========>> build from scratch')
 
-    print('==========>> done initializing model')
+    print('==========>> done')
     return latest_state
 
 
@@ -159,9 +148,9 @@ def submodule_params(model, submodule_str):
 
 def get_param_groups(model, config):
     param_groups = []
-    all_vars = list(model.named_parameters())
-    non_default_var_names = []
     default_param_group = None
+    all_named_params = list(model.named_parameters())
+    non_default_param_names = []
 
     for cfg_param_group in config.PARAM_GROUPS:
         if cfg_param_group['params'][0] == 'default':
@@ -169,31 +158,31 @@ def get_param_groups(model, config):
             continue
 
         module_names = cfg_param_group['params']
-        named_params = []
+        grp_named_params = []
         for module_name in module_names:
-            named_params.extend(submodule_params(model, module_name))
-        non_default_var_names.extend([e[0] for e in named_params])
+            grp_named_params.extend(submodule_params(model, module_name))
+        non_default_param_names.extend([e[0] for e in grp_named_params])
 
         if cfg_param_group['lr'] == 0:
-            for e in named_params:
+            for e in grp_named_params:
                 e[1].requires_grad = False
             continue
 
         param_group = cfg_param_group.copy()
         param_group['params'] = [
-            e[1] for e in named_params if e[1].requires_grad
+            e[1] for e in grp_named_params if e[1].requires_grad
         ]
         param_groups.append(param_group)
 
-    default_vars = [e for e in all_vars if e[0] not in non_default_var_names]
+    default_params = [e[1] for e in all_named_params if e[0] not in non_default_param_names]
 
-    if default_param_group and default_vars:
+    if default_param_group and default_params:
         if default_param_group['lr'] == 0:
-            for e in default_vars:
-                e[1].requires_grad = False
+            for e in default_params:
+                e.requires_grad = False
         else:
             default_param_group['params'] = [
-                e[1] for e in default_vars if e[1].requires_grad
+                e for e in default_params if e.requires_grad
             ]
             param_groups.append(default_param_group)
 
