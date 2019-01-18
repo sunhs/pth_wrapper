@@ -12,16 +12,16 @@ APP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 DATA_DIR = os.path.join(PROJ_ROOT_DIR, 'data')
 MODEL_DIR = os.path.join(
     APP_DIR, 'save_dir',
-    'model_{}'.format(os.path.basename(__file__).rsplit('.')[0].split('_')[1])
+    'config_{}'.format(os.path.basename(__file__).rsplit('.')[0].split('_')[1])
 )
 PRETRAIN_PATH = ''
 STATE_DIR = os.path.join(MODEL_DIR, 'states')
-STATE_PREFIX = 'epoch'
+STATE_PREFIX = 'model'
 STATE_INDEX = None
-SAVE_EPOCH_FREQ = 40
+SAVE_EPOCH_FREQ = 10
 
 # Hypers and devices.
-MAX_EPOCHS = 1200
+MAX_EPOCHS = 30
 BATCH_SIZE = {'train': 32, 'test': 1}
 PARAM_GROUPS = [
     {
