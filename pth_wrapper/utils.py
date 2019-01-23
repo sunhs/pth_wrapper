@@ -47,7 +47,7 @@ def init_model(
             assert index >= 0 and index <= latest_state
             latest_state = index
         load_path = os.path.join(
-            state_dir, '{}_{}.pth'.format(prefix, latest_state)
+            state_dir, '{}.pth-{:04d}'.format(prefix, latest_state)
         )
         print('==========>> resume from {}'.format(load_path))
         model.load_state_dict(torch.load(load_path))

@@ -138,8 +138,8 @@ class MyPrecMetric(EvalMetric):
         self.batch_prec = 0
 
     def update(self, labels, preds):
-        preds = preds[0].numpy()
-        labels = labels[0].numpy()
+        preds = preds[0].detach().numpy()
+        labels = labels[0].detach().numpy()
 
         assert preds.shape == labels.shape
         n_samples = preds.shape[0]
@@ -173,8 +173,8 @@ class MAPMetric(EvalMetric):
         self.labels = None
 
     def update(self, labels, preds):
-        preds = preds[0].numpy()
-        labels = labels[0].numpy()
+        preds = preds[0].detach().numpy()
+        labels = labels[0].detach().numpy()
 
         if self.scores is None or self.labels is None:
             self.scores = preds

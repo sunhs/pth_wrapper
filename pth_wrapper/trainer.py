@@ -28,7 +28,7 @@ class Trainer:
 
         self.optimizer = self.create_optimizer()
         self.lr_scheduler = self.create_lr_scheduler()
-        self.latest_state = utils.load_state_dict(
+        self.latest_state = utils.init_model(
             self.model, self.config.STATE_DIR, self.config.STATE_PREFIX,
             self.config.STATE_INDEX, self.config.PRETRAIN_PATH
         )
@@ -59,7 +59,7 @@ class Trainer:
         if (
             not self.config.SAVE_EPOCH_FREQ or
             epoch % self.config.SAVE_EPOCH_FREQ == 0 or
-            epoch == self.config.MAX_EPOCHS
+            epoch == self.config.MAX_EPOCHS - 1
         ):
             self.model.cpu()
             torch.save(
@@ -109,6 +109,8 @@ class Trainer:
         handler = self.create_handler(mode, num_batch=len(loader))
 
         for i, data in enumerate(loader):
+            if isinstance(data, tuple):
+                data = list(data)
             model.zero_grad()
             tick = time.time()
             inputs, labels = self.parse_data(data, mode)
@@ -159,10 +161,11 @@ class Trainer:
         torch.utils.data.DataLoader
         """
         dataset = self.dataset[mode]
+        shuffle = True if mode is 'train' else False
         loader = dataloader.DataLoader(
             dataset,
             batch_size=self.config.BATCH_SIZE[mode],
-            shuffle=True,
+            shuffle=shuffle,
             num_workers=self.config.NUM_WORKERS,
             collate_fn=dataset.collate_fn
         )
