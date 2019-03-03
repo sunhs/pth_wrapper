@@ -22,22 +22,22 @@ def rm_state_file(checkpoint, config):
 
 
 def mod_log_file(checkpoint, config):
-    with open(os.path.join(config.MODEL_DIR, 'log.pickle'), 'rb') as f:
+    with open(os.path.join(config.MODEL_DIR, 'log.pkl'), 'rb') as f:
         log = pickle.load(f)
     for mode in log:
         for metric in log[mode]:
             if len(log[mode][metric]) > checkpoint:
                 log[mode][metric] = log[mode][metric][:checkpoint + 1]
-    with open(os.path.join(config.MODEL_DIR, 'log.pickle'), 'wb') as f:
+    with open(os.path.join(config.MODEL_DIR, 'log.pkl'), 'wb') as f:
         pickle.dump(log, f)
 
 
 def mod_train_log_file(checkpoint, config):
-    with open(os.path.join(config.MODEL_DIR, 'train_log.pickle'), 'rb') as f:
+    with open(os.path.join(config.MODEL_DIR, 'train_log.pkl'), 'rb') as f:
         train_log = pickle.load(f)
     if len(train_log) > checkpoint:
         train_log = train_log[:checkpoint + 1]
-    with open(os.path.join(config.MODEL_DIR, 'train_log.pickle'), 'wb') as f:
+    with open(os.path.join(config.MODEL_DIR, 'train_log.pkl'), 'wb') as f:
         pickle.dump(train_log, f)
 
 
