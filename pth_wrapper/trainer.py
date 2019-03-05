@@ -79,7 +79,9 @@ class Trainer:
         print('test 1 epoch in {}\n\n\n'.format(utils.parse_time(t - s)))
 
     def _process_epoch(self, epoch, mode):
-        color_code = '\033[1;32m' if sys.platform != 'win32' else ''
+        color_code = ''
+        if sys.platform != 'win32':
+            color_code = '\033[1;31m' if mode == 'train' else '\033[1;34m'
         end_color_code = '\033[0m' if sys.platform != 'win32' else ''
         print(
             color_code + \
