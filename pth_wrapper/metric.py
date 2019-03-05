@@ -127,9 +127,8 @@ class LossMetric(EvalMetric):
 
     def update(self, losses, num_inst):
         self.batch_loss = losses[0].item()
-        self.sum_metric += self.batch_loss
+        self.sum_metric += self.batch_loss * num_inst
         self.num_inst += num_inst
-        self.batch_loss /= num_inst
 
 
 class MyPrecMetric(EvalMetric):
@@ -147,19 +146,19 @@ class MyPrecMetric(EvalMetric):
 
         for i in range(n_samples):
             p, t = preds[i], labels[i]
-            true_positive = np.where(t == 1)[0]
+            gt_positive = np.where(t == 1)[0]
 
-            if not len(true_positive):
+            if not len(gt_positive):
                 continue
 
             sortind = np.argsort(p, axis=0)[::-1]
             correct = 0
 
-            for j in range(len(true_positive)):
-                if sortind[j] in true_positive:
+            for j in range(len(gt_positive)):
+                if sortind[j] in gt_positive:
                     correct += 1
 
-            self.batch_prec += correct / max(len(true_positive), 1)
+            self.batch_prec += correct / max(len(gt_positive), 1)
 
         self.sum_metric += self.batch_prec
         self.num_inst += n_samples
