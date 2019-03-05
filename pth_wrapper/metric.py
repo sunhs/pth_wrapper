@@ -206,3 +206,34 @@ class MAPMetric(EvalMetric):
                 if count != 0:
                     AP[i] = prec / count
         return (self.name, AP)
+
+
+class AccMetric(EvalMetric):
+    def __init__(self, name):
+        super(AccMetric, self).__init__(name)
+        self.class_metric = None
+        self.class_inst = None
+
+    def update(self, labels, preds):
+        preds = preds[0].detach().numpy()
+        labels = labels[0].detach().numpy()
+
+        num_classes = preds.shape[1]
+        if self.class_metric is None or self.class_inst is None:
+            self.class_metric = np.zeros((num_classes,))
+            self.class_inst = np.zeros((num_classes,))
+
+        pred_classes = np.argmax(preds, axis=1)
+        for sample_ind, pred_class in enumerate(pred_classes):
+            gt_class = labels[sample_ind]
+            self.num_inst += 1
+            self.class_inst[gt_class] += 1
+            if pred_class == gt_class:
+                self.class_metric[gt_class] += 1
+                self.sum_metric += 1
+
+    def get(self):
+        return (
+            (self.name, self.sum_metric / self.num_inst),
+            ('class acc', self.class_metric / self.class_inst)
+        )
