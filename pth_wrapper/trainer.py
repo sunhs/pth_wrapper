@@ -191,7 +191,7 @@ class Trainer:
             the second the list of labels.
         """
         for i in range(len(data)):
-            if isinstance(data, torch.Tensor):
+            if isinstance(data[i], torch.Tensor):
                 data[i] = data[i].to(self.device)
         return data[:-1], data[-1:]
 

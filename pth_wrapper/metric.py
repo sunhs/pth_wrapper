@@ -187,7 +187,7 @@ class MAPMetric(EvalMetric):
         # copied from https://github.com/zxwu/lsvc2017
         probs = self.scores
         labels = self.labels
-        AP = np.zeros((probs.shape[1], ))
+        AP = np.zeros((probs.shape[1],))
 
         for i in range(probs.shape[1]):
             iClass = probs[:, i]
@@ -209,8 +209,9 @@ class MAPMetric(EvalMetric):
 
 
 class AccMetric(EvalMetric):
-    def __init__(self, name):
+    def __init__(self, name, k=1):
         super(AccMetric, self).__init__(name)
+        self.k = k
         self.class_metric = None
         self.class_inst = None
 
@@ -223,14 +224,16 @@ class AccMetric(EvalMetric):
             self.class_metric = np.zeros((num_classes,))
             self.class_inst = np.zeros((num_classes,))
 
-        pred_classes = np.argmax(preds, axis=1)
-        for sample_ind, pred_class in enumerate(pred_classes):
+        pred_classes = np.argsort(preds)[:, -self.k:][:, ::-1]
+        # pred_classes = np.argmax(preds, axis=1)
+        for sample_ind, topk_classes in enumerate(pred_classes):
             gt_class = labels[sample_ind]
             self.num_inst += 1
             self.class_inst[gt_class] += 1
-            if pred_class == gt_class:
-                self.class_metric[gt_class] += 1
+            # if pred_class == gt_class:
+            if gt_class in topk_classes:
                 self.sum_metric += 1
+                self.class_metric[gt_class] += 1
 
     def get(self):
         return (
